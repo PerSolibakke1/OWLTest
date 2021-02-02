@@ -1,8 +1,8 @@
 import { login, readClass, readAllClasses, insertClass } from './database.js';
 import express from 'express';
 
-const app = express()
-const port = 3000
+const app = express();
+const port = 3000;
 
 await login();
 
@@ -17,5 +17,5 @@ app.get('/class/:className', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Example app listening at http://localhost:${port}`);
 })
