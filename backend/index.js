@@ -7,8 +7,14 @@ const port = 3000
 await login();
 
 app.get('/', async (req, res) => {
-    res.send('hello');
-})
+    const data = await readAllClasses();
+    res.json(data);
+});
+
+app.get('/class/:className', async (req, res) => {
+    const data = await readClass(req.params.className); 
+    res.json(data);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

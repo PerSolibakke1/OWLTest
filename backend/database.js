@@ -35,7 +35,7 @@ export const login = () => {
         });
 }
 
-export const readClass = (className) => {
+export const readClass = async (className) => {
     const query = `
         select *
         where {
@@ -43,32 +43,17 @@ export const readClass = (className) => {
             filter(regex(str(?class), "Wine", "i")) .
         }`;
 
-    graphDBEndpoint
-        .query(query, { transform: "toJSON" })
-        .then((result) => {
-            console.log("Read a class:\n" + JSON.stringify(result, null, 2));
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+    return await graphDBEndpoint.query(query, { transform: "toJSON" });
 }
 
-export const readAllClasses = () => {
+export const readAllClasses = async () => {
     const query = `
         select ?class
         where {
             ?class a owl:Class .
         }`;
 
-    graphDBEndpoint
-        .query(query, { transform: "toJSON" })
-        .then((result) => {
-            console.log("Read all class in graph :\n" + JSON.stringify(result, null, 2));
-        })
-        .catch((err) => {
-            console.log('error reading all classes')
-            console.log(err);
-        });
+    return await graphDBEndpoint.query(query, { transform: "toJSON" });
 }
 
 export const insertClass = () => {
