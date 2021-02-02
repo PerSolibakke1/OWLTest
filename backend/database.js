@@ -40,7 +40,7 @@ export const readClass = async (className) => {
         select *
         where {
             ?class rdf:type owl:Class
-            filter(regex(str(?class), "Wine", "i")) .
+            filter(regex(str(?class), "${className}", "i")) .
         }`;
 
     return await graphDBEndpoint.query(query, { transform: "toJSON" });
