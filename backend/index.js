@@ -1,7 +1,9 @@
 import { login, readClass, readAllClasses, insertClass } from './database.js';
 import express from 'express';
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 const port = 3000;
 
 await login();
