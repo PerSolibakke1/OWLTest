@@ -1,4 +1,4 @@
-import { login, readClass, readAllClasses, insertClass } from './database.js';
+import { login, getRelations, readAllClasses, insertClass } from './database.js';
 import express from 'express';
 import cors from 'cors';
 
@@ -9,13 +9,23 @@ const port = 3000;
 await login();
 
 app.get('/', async (req, res) => {
+  try {
     const data = await readAllClasses();
     res.json(data);
+  } catch (e) {
+    console.log(e);
+    res.json({error: e.message});
+  }
 });
 
 app.get('/class/:className', async (req, res) => {
-    const data = await readClass(req.params.className); 
+  try {
+    const data = await getRelations(req.params.className); 
     res.json(data);
+  } catch (e) {
+    console.log(e);
+    res.json({error: e.message});
+  }
 });
 
 app.listen(port, () => {

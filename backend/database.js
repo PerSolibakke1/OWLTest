@@ -26,6 +26,51 @@ const graphDBEndpoint = new EnapsoGraphDBClient.Endpoint({
     prefixes: DEFAULT_PREFIXES
 });
 
+
+
+const getName = (id) => {
+    const regex = /^[^_]*#/;
+    return id.replace(regex, '');
+}
+
+const mapIdToObject = (id) => {
+    return {
+        name: getName(id),
+        id,
+    }
+}
+
+const isRelevantOntology = (ontology) => {
+    if (!ontology || !ontology.Predicate || !(ontology.Subject || ontology.Object)) return false;
+    if (ontology.Predicate.includes('#type')) return false;
+    const ontologyEntity = ontology.Subject || ontology.Object;
+    if (ontologyEntity.includes('node')) return false;
+    if (ontology.Predicate.includes('hasWineDescriptor')) return false;
+    return true;
+}
+
+const mapRecordToObject = (record) => {
+    const output = {};
+    Object.keys(record).forEach((key) => {
+        output[key] = mapIdToObject(record[key]);
+    });
+    return output;
+}
+
+const removeDuplicates = (ontologies, queriedName) => {
+    const usedNames = [];
+    return ontologies.filter(ont => {
+        if (ont.Subject) {
+            if (usedNames.includes(ont.Subject.name)) return false;
+            usedNames.push(ont.Subject.name);
+        } else {
+            if (usedNames.includes(ont.Object.name)) return false;
+            usedNames.push(ont.Object.name);
+        }
+        return true;
+    });
+}
+
 export const login = () => {
     graphDBEndpoint.login(GRAPHDB_USERNAME,GRAPHDB_PASSWORD)
         .then((result) => {
@@ -35,15 +80,25 @@ export const login = () => {
         });
 }
 
-export const readClass = async (className) => {
+export const getRelations = async (className) => {
     const query = `
-        select *
-        where {
-            ?class rdf:type owl:Class
-            filter(regex(str(?class), "${className}", "i")) .
-        }`;
+        PREFIX : <http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#>
+        SELECT *
+        WHERE {
+            {
+                ${className} ?Predicate ?Object
+            }
+            UNION
+            {
+                ?Subject ?Predicate ${className}
+            }
+        } `;
 
-    return await graphDBEndpoint.query(query, { transform: "toJSON" });
+    const response = await graphDBEndpoint.query(query, { transform: "toJSON" });
+    const foo = response.records
+        .filter(isRelevantOntology)
+        .map(mapRecordToObject);
+    return removeDuplicates(foo, className);
 }
 
 export const readAllClasses = async () => {
